@@ -1,0 +1,150 @@
+Great — you’re at the fun part now: wiring your **Web App + GitHub repo + Storage Account** together so users can upload an Excel file and you can store it in Azure Blob Storage.
+
+Let’s build this cleanly and simply in **Python 3.14** using **Flask** (the easiest framework for Azure Web Apps).
+
+Below is everything you need:
+
+---
+
+# 📁 1. Install the required Python packages
+
+In your repo, create a file named **requirements.txt**:
+
+```
+flask
+azure-storage-blob
+```
+
+Azure will automatically install these when you deploy.
+
+---
+
+# 🧠 2. Set your Azure Storage connection string in App Settings
+
+In the Azure Portal:
+
+1. Go to **Your Web App**
+2. Left menu → **Configuration**
+3. Add a new setting:
+
+```
+Name: AZURE_STORAGE_CONNECTION_STRING
+Value: <your storage account connection string>
+```
+
+You can get the connection string from:
+
+**Storage Account → Access Keys → Connection string**
+
+---
+
+# 📝 3. Create your Python app (app.py)
+
+Create a file named **app.py** in your GitHub repo:
+
+```python
+import os
+from flask import Flask, request, render_template_string
+from azure.storage.blob import BlobServiceClient
+
+app = Flask(__name__)
+
+# Get connection string from environment variable
+connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+
+# Name of your container (create it in Azure Storage first)
+CONTAINER_NAME = "uploads"
+
+# Simple HTML upload form
+UPLOAD_FORM = """
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Upload Excel File</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx,.xls" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
+"""
+
+@app.route("/")
+def index():
+    return render_template_string(UPLOAD_FORM)
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    file = request.files.get("file")
+
+    if not file:
+        return "No file uploaded", 400
+
+    try:
+        # Upload to Azure Blob Storage
+        blob_client = blob_service_client.get_blob_client(
+            container=CONTAINER_NAME,
+            blob=file.filename
+        )
+
+        blob_client.upload_blob(file, overwrite=True)
+
+        return f"File '{file.filename}' uploaded successfully!"
+    except Exception as e:
+        return f"Error uploading file: {str(e)}", 500
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
+```
+
+---
+
+# 📦 4. Create the container in your Storage Account
+
+In Azure Portal:
+
+1. Go to your **Storage Account**
+2. Left menu → **Containers**
+3. Click **+ Container**
+4. Name it:
+
+```
+uploads
+```
+
+Set **Public access = Private** (recommended).
+
+---
+
+# 🚀 5. Deploy via GitHub
+
+Since your Web App is already connected to your GitHub repo:
+
+- Commit and push your files
+- Azure will auto-deploy
+- Visit your Web App URL
+
+You’ll see a simple upload form.
+
+Upload an Excel file → it will appear in your Storage Account under the **uploads** container.
+
+---
+
+# 🎉 You now have:
+✔ A working Python 3.14 web app  
+✔ A file upload form  
+✔ Uploads stored in Azure Blob Storage  
+✔ GitHub-based deployment  
+
+---
+
+If you want, I can help you:
+
+- Add authentication  
+- Add a nicer HTML UI  
+- Process the Excel file after upload  
+- List uploaded files  
+- Add logging or error handling  
+
+Just tell me what you want next.
