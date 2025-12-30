@@ -18,8 +18,8 @@ UPLOAD_FORM = """
 
         <label>Select document type:</label><br>
         <select name="container" required>
-            <option value="Vendor_Uploads">Vendor Uploads</option>
-            <option value="Customer_Uploads">Customer Uploads</option>
+            <option value="vendor-uploads">vendor-uploads</option>
+            <option value="customer-uploads">customer-uploads</option>
         </select>
         <br><br>
 
