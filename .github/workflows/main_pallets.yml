@@ -7,7 +7,7 @@ name: Build and deploy Python app to Azure Web App - pallets
 on:
   push:
     branches:
-      - main
+      - Upload_to_different_containers
   workflow_dispatch:
 
 jobs:
@@ -73,4 +73,5 @@ jobs:
         with:
           app-name: 'pallets'
           slot-name: 'Production'
+
           
